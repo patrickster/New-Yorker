@@ -1,19 +1,18 @@
 #!/usr/bin/python
 
-import requests
-from BeautifulSoup import BeautifulSoup
-import random
-import time
-import datetime
 from datetime import timedelta
+import datetime
 import optparse
+import random
+import requests
 import re
+import time
 
 
 def get_issue_dates(start_date, end_date):
-    """ Returns a list of all the Mondays in the specified date range
-        (technically a superset of actual issue dates, since there isn't
-        a new issue every week).""" 
+    """ Returns a list of all POSSIBLE issue dates in the specified date range
+        (first Monday of each week). This will be a superset of actual issue
+        dates, since there isn't a new issue every week.""" 
 
     # Shift start date to first Monday in range
     start_shift = (7 - start_date.weekday()) % 7
@@ -23,11 +22,15 @@ def get_issue_dates(start_date, end_date):
     end_shift = (end_date.weekday()) % 7
     end_date = end_date - timedelta(end_shift)
 
+    # Don't look for issues more recent than 2012-07-23
+    # (can't seem to find ToC online)
+    end_date = min(end_date, datetime.date(2012, 7, 23))
+
     issue_dates = []
     for n in range(0, int((end_date - start_date + timedelta(1)).days), 7):
         issue_dates += [start_date + timedelta(n)]
 
-    print str(len(issue_dates)) + " dates in range"
+    print str(len(issue_dates)) + ' dates in range'
     return issue_dates
 
 
@@ -71,6 +74,7 @@ def download_toc(date, directory):
 
 
 def main():
+    """ Parse options and run scraper."""
 
     # Parse options
     parser = optparse.OptionParser()
